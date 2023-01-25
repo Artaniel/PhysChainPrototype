@@ -180,14 +180,14 @@ public class ChainController : MonoBehaviour {// Скрипт для повед�
 	}
 	
 	void DrawRope(){
-		if (status != "start") {		
-			Line.SetVertexCount(CurrentChainLength+2);	
+		if (status != "start") {
+			Line.positionCount = CurrentChainLength + 2;
 			Line.SetPosition(0,Harpoon.transform.position);
 			for (int i = 1; i<= CurrentChainLength; i++){
 				Line.SetPosition(i,Chain[i].transform.position);
 			}
 			Line.SetPosition(CurrentChainLength+1,transform.position);
 		}
-		else Line.SetVertexCount(0);
+		else Line.positionCount = 0;
 	}
 }
