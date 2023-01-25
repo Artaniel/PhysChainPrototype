@@ -23,7 +23,9 @@ public class PlayerController : MonoBehaviour { // Скрипт для упра�
 	void Update () {
 		MouseInputUpdate();
 		//TouchInputUpdate();
-		MainCamera.transform.localPosition =  CameraStartPosition+new Vector3(Mathf.Atan(GetComponent<Rigidbody>().velocity.x/10)*2,Mathf.Atan(GetComponent<Rigidbody>().velocity.y/10)*2,0);//тут залоджен эффект опережения камерой корабля игрока
+		MainCamera.transform.localPosition =  
+			CameraStartPosition+new Vector3(Mathf.Atan(GetComponent<Rigidbody>().velocity.x/10)*2,Mathf.Atan(GetComponent<Rigidbody>().velocity.y/10)*2,0);
+		//тут залоджен эффект опережения камерой корабля игрока
 		//MainCamera.transform.localRotation = new Quaternion(0,0,0,0);
 		//MainCamera.transform.Rotate( new Vector3(-rigidbody.velocity.y*3,rigidbody.velocity.x*3,0));
 		//Model.transform.LookAt(transform.position+rigidbody.velocity);
