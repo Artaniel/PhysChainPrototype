@@ -41,12 +41,12 @@ public class Messenger : MonoBehaviour {//это контейнер для пе�
 	
 	void SetAsteroidSpawner(){
 		if (BeltNumber == 0) {
-			asteroidSpawner.NormalSpeed = new Vector3(1,0,0);
-			asteroidSpawner.SpeedFluctuation = 0.2f;			
+			asteroidSpawner.normalSpeed = new Vector3(1,0,0);
+			asteroidSpawner.speedFluctuation = 0.2f;			
 		}
 		if (BeltNumber == 1){			
-			asteroidSpawner.NormalSpeed = new Vector3(5,0,0);
-			asteroidSpawner.SpeedFluctuation = 1f;	
+			asteroidSpawner.normalSpeed = new Vector3(5,0,0);
+			asteroidSpawner.speedFluctuation = 1f;	
 		}
 		if (BeltNumber == 2){
 			
