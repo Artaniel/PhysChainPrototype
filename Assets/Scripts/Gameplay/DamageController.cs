@@ -25,7 +25,7 @@ public class DamageController : MonoBehaviour {
 			HitPoints += RegenSpeed * Time.deltaTime;
 			if (HitPoints>100) HitPoints = 100;
 		}
-		playerController.EnginePower = MaxEnginePower * HitPoints/100;
+		playerController.enginePower = MaxEnginePower * HitPoints/100;
 		Veslo.transform.Rotate(Vector3.forward, Time.deltaTime*HitPoints*180/(10*Mathf.PI));
 	}
 	
