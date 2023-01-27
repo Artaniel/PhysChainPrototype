@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class ChainController : MonoBehaviour {// Скрипт для поведения цепи с гарпуном
+public class ChainController : MonoBehaviour {
 	
 	//ToDo List:
 	//Сматывание/разматывание цепи
@@ -13,80 +13,79 @@ public class ChainController : MonoBehaviour {// Скрипт для повед�
 	//"connected" - Гарпун попал в астероид, связан с ним, цепь сформирована
 	//"solid" - Цепь напряжена, орисовывается не отдельными физ телами, а тупым лерпом
 	//"restarting" - цепь плавно возвращается в корабль
-	public int MaxChainLength = 50;// максимальное число звеньев цепи
-	public int CurrentChainLength = 0;// сколько звеньев задейственно сейчас
-	public float ChainStep = 0.1f;//Номинальное растояние между звениями цепи, если напряжена могут быть больше, но стремятся к этому
-	public float LunchSpeedMultipier = 1;//коэффициент между натяжением мышкой при з-апуске и скоростью пуска
-	public GameObject Harpoon;// Гарпун, он же конец цепи
-	private GameObject[] Chain;	// цепь есть массив звеньев (ваш КО)
-	public GameObject ChainCellPrototype;// образец звена
-	public float SolidationDistanceModifer = 1; // множитель показывающий на какой дистанции цепь становится твердой.
-	public float DesolidationDistanceModifer = 1; // Тоже для процсса перехода из твердой в гибкую
-	private int SolidationStage = 0;//Нужно чтобы затвердение цепи было не мгновенным, конкретно эта переменная  -текущая стадия затвердения
-	public int SolidationTimeFrames = 10;// Это всего сколько фреймов на затвердение
-	public GameObject ChainContainer;//просто чтобы убрать объекты из корня дерева иерархии пакуем их сюда
-	private LineRenderer Line;//тут ссылк на компонент для рисования линии веревки
-	private float RestartingPhase = 0;
-	public float RestartTime = 0.5f;
+	public int maxChainLength = 50;// max number of chain links
+	public int currentChainLength = 0;
+	public float chainStep = 0.1f;//nominal distance between chain links
+	public float lunchSpeedMultipier = 1;
+	public GameObject harpoon;
+	private GameObject[] chain;	
+	public GameObject chainCellPrototype;
+	public float solidationDistanceModifer = 1; // multiplier to distance, after wich chain goes solid
+	public float desolidationDistanceModifer = 1; // same for reverse process, solid to flexible
+	private int solidationStage = 0;
+	public int solidationTimeFrames = 10; // how much time solidation process take in frames
+	public GameObject chainContainer;
+	private LineRenderer line; // for rope or chain line renderer
+	private float restartingPhase = 0;
+	public float restartTime = 0.5f;
 	
 	void Start () {
-		Chain = new GameObject[MaxChainLength+1];//нулевое место для гарпуна
-		Chain[0] = Harpoon; 
-		for(int i=1; i<=MaxChainLength; i++){
-			Chain[i] = Instantiate(ChainCellPrototype) as GameObject;
-			Chain[i].name = "Rope" + i.ToString();
-			Chain[i].transform.parent = ChainContainer.transform;
+		chain = new GameObject[maxChainLength+1];// chain[0] is for harpoon, so number of indexes is +1 from number of chain links
+		chain[0] = harpoon; 
+		for(int i=1; i<=maxChainLength; i++){
+			chain[i] = Instantiate(chainCellPrototype) as GameObject;
+			chain[i].name = "Rope" + i.ToString();
+			chain[i].transform.parent = chainContainer.transform;
 		}
-		Line = gameObject.GetComponent<LineRenderer>();
+		line = gameObject.GetComponent<LineRenderer>();
 	}
 	
 	void Update () {
-		if (status == "launched"){			
-			float Delta = Vector3.Distance(transform.position, Chain[CurrentChainLength].transform.position);
-			int CellsToAdd = (int)(Delta / ChainStep);
-			if (CellsToAdd + CurrentChainLength <= MaxChainLength){
-				if (Delta > ChainStep){
-					for (int i = 1; i<= CellsToAdd; i++){
-						Chain[CurrentChainLength+i].transform.position = Vector3.Lerp(Chain[CurrentChainLength].transform.position, transform.position, i*(float)ChainStep/Delta);
-						CreateCharJoint(Chain[CurrentChainLength+i],Chain[CurrentChainLength+i-1]);
-						Chain[CurrentChainLength+i].GetComponent<Rigidbody>().velocity = GetComponent<Rigidbody>().velocity;
+		if (status == "launched"){			//self made state machine
+			float delta = Vector3.Distance(transform.position, chain[currentChainLength].transform.position);
+			int cellsToAdd = (int)(delta / chainStep);
+			if (cellsToAdd + currentChainLength <= maxChainLength){
+				if (delta > chainStep){
+					for (int i = 1; i<= cellsToAdd; i++){
+						chain[currentChainLength+i].transform.position = Vector3.Lerp(chain[currentChainLength].transform.position, transform.position, i*(float)chainStep/delta);
+						CreateCharJoint(chain[currentChainLength+i],chain[currentChainLength+i-1]);
+						chain[currentChainLength+i].GetComponent<Rigidbody>().velocity = GetComponent<Rigidbody>().velocity;
 					}
-					CurrentChainLength += CellsToAdd;
+					currentChainLength += cellsToAdd;
 				}
 			}else{
 				status = "missed";				
-				CreateCharJoint(gameObject,Chain[CurrentChainLength]);
+				CreateCharJoint(gameObject,chain[currentChainLength]);
 			}
 		}
 		if (status == "connected"){
-			if (Vector3.Distance(transform.position, Harpoon.transform.position)> SolidationDistanceModifer*ChainStep*CurrentChainLength){
+			if (Vector3.Distance(transform.position, harpoon.transform.position)> solidationDistanceModifer*chainStep*currentChainLength){
 				status = "solid";
-				SolidationStage = 0;
+				solidationStage = 0;
 			}
 		}
 		if (status == "solid"){
-			if (SolidationStage>SolidationTimeFrames){
-				for (int i = 1; i<= CurrentChainLength; i++){
-					Chain[i].transform.position = Vector3.Lerp(Harpoon.transform.position, transform.position, (float)i/(float)CurrentChainLength);
+			if (solidationStage>solidationTimeFrames){
+				for (int i = 1; i<= currentChainLength; i++){
+					chain[i].transform.position = Vector3.Lerp(harpoon.transform.position, transform.position, (float)i/(float)currentChainLength);
 				}
 			}else{
-				SolidationStage++;
-				for (int i = 1; i<= CurrentChainLength; i++){
-					Chain[i].transform.position = Vector3.Lerp((Vector3.Lerp(Harpoon.transform.position, transform.position, (float)i/(float)CurrentChainLength)),Chain[i].transform.position,0.5f);
-					// ищем позицию посредине между старым положением и местом куда должна стать точка после натяжения цепи, делаем так в SolidationTimeFrames фреймах подряд.
-					//Сделано для менее внезапного перехода на жесткую позицию
-				}
+				solidationStage++;
+				for (int i = 1; i<= currentChainLength; i++)
+					chain[i].transform.position = Vector3.Lerp( // this lerp for smothnes of movement to new position
+						(Vector3.Lerp(harpoon.transform.position, transform.position, (float)i/(float)currentChainLength)) // this lerp for defining target position for specific chain link
+						,chain[i].transform.position,0.5f);
 			}
-			if (Vector3.Distance(transform.position, Harpoon.transform.position)< DesolidationDistanceModifer*ChainStep*CurrentChainLength){
+			if (Vector3.Distance(transform.position, harpoon.transform.position)< desolidationDistanceModifer*chainStep*currentChainLength){
 				status = "connected";
-				for (int i = 1; i<= CurrentChainLength; i++){
-					Chain[i].GetComponent<Rigidbody>().velocity = Vector3.Lerp(Harpoon.GetComponent<Rigidbody>().velocity, GetComponent<Rigidbody>().velocity, (float)i/(float)CurrentChainLength);
+				for (int i = 1; i<= currentChainLength; i++){
+					chain[i].GetComponent<Rigidbody>().velocity = Vector3.Lerp(harpoon.GetComponent<Rigidbody>().velocity, GetComponent<Rigidbody>().velocity, (float)i/(float)currentChainLength);
 				}
 			}
 		}
-		if ((status == "missed")&&(Vector3.Distance(Harpoon.transform.position,transform.position)<0.5f)){
+		if ((status == "missed")&&(Vector3.Distance(harpoon.transform.position,transform.position)<0.5f)){
 			status = "restarting";
-			RestartingPhase = 0;			
+			restartingPhase = 0;			
 		}
 		if (status == "restarting"){
 			RestartChainUpdate();
@@ -100,26 +99,25 @@ public class ChainController : MonoBehaviour {// Скрипт для повед�
 		}
 	}
 	
-	void PullBackSolid(){//В случае максимального натяжения цепи должно выровнять импульсы так чтобы цепь прекратила растягиваться, а вращение сохранилось
-		Vector3 DeltaPos = Harpoon.transform.position - transform.position;
-		Vector3 DeltaV = Harpoon.GetComponent<Rigidbody>().velocity - GetComponent<Rigidbody>().velocity;		
-		float alpha = Vector3.Angle(DeltaPos, DeltaV);
-		//Debug.Log(Mathf.Cos(alpha/180*Mathf.PI));
-		Vector3 DeltaVNormal =  DeltaV.magnitude* Mathf.Cos(alpha/180*Mathf.PI)* DeltaPos / DeltaPos.magnitude;		
-		float HMass = Harpoon.GetComponent<Rigidbody>().mass + Harpoon.GetComponent<CharacterJoint>().connectedBody.GetComponent<Rigidbody>().mass;//маса гарпуна + того к кому он присоединен
-		float PMass = GetComponent<Rigidbody>().mass;
-		if (Vector3.Angle(DeltaVNormal,DeltaPos)<90){
-			GetComponent<Rigidbody>().velocity += DeltaVNormal * HMass / (HMass + PMass);
-			Harpoon.GetComponent<Rigidbody>().velocity += - DeltaVNormal * PMass / (HMass + PMass);
-			Harpoon.GetComponent<CharacterJoint>().connectedBody.GetComponent<Rigidbody>().velocity += - DeltaVNormal * PMass / (HMass + PMass);
+	void PullBackSolid(){ // much physics and geometry here. It equals momentums in projection on axis of chain to prevent its extending
+		Vector3 deltaPos = harpoon.transform.position - transform.position;
+		Vector3 deltaV = harpoon.GetComponent<Rigidbody>().velocity - GetComponent<Rigidbody>().velocity;		
+		float alpha = Vector3.Angle(deltaPos, deltaV);
+		Vector3 deltaVNormal =  deltaV.magnitude* Mathf.Cos(alpha/180*Mathf.PI)* deltaPos / deltaPos.magnitude; // diference in velociti in projection of axis of chain
+		float hMass = harpoon.GetComponent<Rigidbody>().mass + harpoon.GetComponent<CharacterJoint>().connectedBody.GetComponent<Rigidbody>().mass;//mass of Harpoon + mass of asteroid connected to it
+		float pMass = GetComponent<Rigidbody>().mass;
+		if (Vector3.Angle(deltaVNormal,deltaPos)<90){
+			GetComponent<Rigidbody>().velocity += deltaVNormal * hMass / (hMass + pMass);
+			harpoon.GetComponent<Rigidbody>().velocity += - deltaVNormal * pMass / (hMass + pMass);
+			harpoon.GetComponent<CharacterJoint>().connectedBody.GetComponent<Rigidbody>().velocity += - deltaVNormal * pMass / (hMass + pMass);
 		}
 	}
 	
-	public void LaunchChain(Vector3 target){//target тут - позиция в которую запускаем гарпун, высщитанная из координат мышки, уже относительно корабля
-		Harpoon.transform.position = transform.position;
-		Harpoon.GetComponent<Rigidbody>().velocity = LunchSpeedMultipier * target + GetComponent<Rigidbody>().velocity;
-		Harpoon.transform.LookAt(transform.position + target);
-		Harpoon.transform.Rotate(90,0,0);
+	public void LaunchChain(Vector3 target){ //target is target position set by input
+		harpoon.transform.position = transform.position;
+		harpoon.GetComponent<Rigidbody>().velocity = lunchSpeedMultipier * target + GetComponent<Rigidbody>().velocity;
+		harpoon.transform.LookAt(transform.position + target);
+		harpoon.transform.Rotate(90,0,0);
 		status = "launched";
 	}
 	
@@ -131,63 +129,62 @@ public class ChainController : MonoBehaviour {// Скрипт для повед�
 		if ((status == "launched")&&(target.name.Contains("Asteroid"))) {
 			ConnectChain(target);
 			status = "connected";
-			CreateCharJoint(gameObject,Chain[CurrentChainLength]);
+			CreateCharJoint(gameObject,chain[currentChainLength]);
 		}		
 	}
 	
 	public void DisconnectHarpoon(){
-		Destroy(Harpoon.GetComponent<CharacterJoint>());
+		Destroy(harpoon.GetComponent<CharacterJoint>());
 		status = "missed";
 	}
 	
 	void ConnectChain(GameObject target){
-		CreateCharJoint(Harpoon,target);
-		//Потом сюда добавлю какие то довороты гарпуна. Возможно визуальные эффекты.
+		CreateCharJoint(harpoon,target);
 	}
 	
 	void CreateCharJoint(GameObject OnWho, GameObject ConnectedToWho){
-		CharacterJoint JointConnection = OnWho.AddComponent<CharacterJoint>();		
-		JointConnection.anchor = Vector3.zero;
-		JointConnection.connectedBody = ConnectedToWho.GetComponent<Rigidbody>();
-		JointConnection.axis = new Vector3(0,0,1);	//значит что связь может вразщаться только в плоскости экрана	
+		CharacterJoint jointConnection = OnWho.AddComponent<CharacterJoint>();		
+		jointConnection.anchor = Vector3.zero;
+		jointConnection.connectedBody = ConnectedToWho.GetComponent<Rigidbody>();
+		jointConnection.axis = new Vector3(0,0,1);	//rotation available only in plane of screen
 	}
 	
 	void RestartChainUpdate(){
-		if (RestartingPhase == 0){
-			for (int i = 1; i<=CurrentChainLength; i++){
-				Destroy(Chain[CurrentChainLength-i+1].GetComponent<CharacterJoint>());
-				Chain[CurrentChainLength-i+1].GetComponent<Rigidbody>().velocity = Vector3.zero;
-				Chain[CurrentChainLength-i+1].GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+		if (restartingPhase == 0){
+			for (int i = 1; i<=currentChainLength; i++){
+				Destroy(chain[currentChainLength-i+1].GetComponent<CharacterJoint>());
+				chain[currentChainLength-i+1].GetComponent<Rigidbody>().velocity = Vector3.zero;
+				chain[currentChainLength-i+1].GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
 			}
-			Harpoon.GetComponent<Rigidbody>().velocity = Vector3.zero;
-			Harpoon.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+			harpoon.GetComponent<Rigidbody>().velocity = Vector3.zero;
+			harpoon.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
 			Destroy(gameObject.GetComponent<CharacterJoint>());
 		}
-		RestartingPhase+= Time.deltaTime;
-		if (RestartingPhase<RestartTime){
-			for (int i = 1; i<=CurrentChainLength; i++){
-			Chain[CurrentChainLength-i+1].transform.position = Vector3.Lerp(Chain[CurrentChainLength-i+1].transform.position, transform.position, RestartingPhase/RestartTime );// вообще это криво, но работать будет
-			Harpoon.transform.position = transform.position;
+		restartingPhase+= Time.deltaTime;
+		if (restartingPhase<restartTime){
+			for (int i = 1; i<=currentChainLength; i++){
+			chain[currentChainLength-i+1].transform.position = Vector3.Lerp(chain[currentChainLength-i+1].transform.position, transform.position, restartingPhase/restartTime );// вообще это криво, но работать будет
+			harpoon.transform.position = transform.position;
 		}
 		}else{
-			for (int i = 1; i<=CurrentChainLength; i++){
-				Chain[CurrentChainLength-i+1].transform.Translate(0,0,-100);
+			for (int i = 1; i<=currentChainLength; i++){
+				chain[currentChainLength-i+1].transform.Translate(0,0,-100);
 			}
-			Harpoon.transform.position = new Vector3(0,0,-100);
-			CurrentChainLength = 0;
+			harpoon.transform.position = new Vector3(0,0,-100);
+			currentChainLength = 0;
 			status = "start";	
 		}		
 	}
 	
 	void DrawRope(){
 		if (status != "start") {
-			Line.positionCount = CurrentChainLength + 2;
-			Line.SetPosition(0,Harpoon.transform.position);
-			for (int i = 1; i<= CurrentChainLength; i++){
-				Line.SetPosition(i,Chain[i].transform.position);
+			line.positionCount = currentChainLength + 2;
+			line.SetPosition(0,harpoon.transform.position);
+			for (int i = 1; i<= currentChainLength; i++){
+				line.SetPosition(i,chain[i].transform.position);
 			}
-			Line.SetPosition(CurrentChainLength+1,transform.position);
+			line.SetPosition(currentChainLength+1,transform.position);
 		}
-		else Line.positionCount = 0;
+		else line.positionCount = 0;
 	}
 }

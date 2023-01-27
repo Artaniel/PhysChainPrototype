@@ -87,7 +87,7 @@ public class CollectorController : MonoBehaviour {
 					(NearAsteroidPosition.x<(transform.position.x+3f))&&
 					(NearAsteroidPosition.y<(transform.position.y+0.5f))&&
 					(NearAsteroidPosition.y>(transform.position.y-1.5f))&&//вобщем если астероид внутри коробки. Могут быть проблемы изза касания крышки коробки, да и вообще размеров астероида
-					(PlayerChar.GetComponent<ChainController>().Harpoon.GetComponent<CharacterJoint>()==null)&&//Надо упростить бы както... Вобщем чек не присоединен ли гарпун к комуто
+					(PlayerChar.GetComponent<ChainController>().harpoon.GetComponent<CharacterJoint>()==null)&&//Надо упростить бы както... Вобщем чек не присоединен ли гарпун к комуто
 					(//ну и чек нет ли игрока в коробке
 						(PlayerPos.x<(transform.position.x-3f))||
 						(PlayerPos.x>(transform.position.x+3f))||
