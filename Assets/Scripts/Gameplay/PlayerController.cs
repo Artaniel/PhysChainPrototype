@@ -8,8 +8,11 @@ public class PlayerController : MonoBehaviour { // Скрипт для упра�
 	public ChainController chain;
 	private Vector3 cameraStartPosition;
 	private Vector3 InputPositionUniversal;
-		
+
+	public static PlayerController instance = null;
+
 	void Awake(){
+		instance = this;
 		cameraStartPosition = Camera.main.transform.localPosition;
 		try{
 			GameObject.Find("RealMessenger").GetComponent<Messenger>().GameInit();//пытаемся найти контейнер с установками иигры и пнуть его чтобы разложил переменные по объектам
@@ -33,7 +36,7 @@ public class PlayerController : MonoBehaviour { // Скрипт для упра�
 		}
 		if (!Input.GetMouseButton(0)&& !moveEnabled) {
 			moveEnabled = true;
-			chain.LaunchChain(Input.mousePosition - new Vector3(Screen.width/2, Screen.height/2, 0)+ 80 * new Vector3(Mathf.Atan(GetComponent<Rigidbody>().velocity.x/10)*2,Mathf.Atan(GetComponent<Rigidbody>().velocity.y/10)*2));
+			chain.LaunchChain(deltaPosition);
 		}
 		if (Input.GetMouseButton(0)){
 			Debug.DrawRay(transform.position, deltaPosition/100f);

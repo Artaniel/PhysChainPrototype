@@ -1,11 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class ChainController : MonoBehaviour {
-	
-	//ToDo List:
-	//Сматывание/разматывание цепи
-	
+public class ChainController : MonoBehaviour {	
 	public string status="start";//строка в которой храним в каком состоянии мы сейчас:
 	//"start" - начальное состояние, гарпун в корабле, цепи нет.
 	//"launched" - Гарпун запущен, но еще никуда не попал, цепь генерится за ним
@@ -31,10 +27,10 @@ public class ChainController : MonoBehaviour {
 	
 	void Start () {
 		chain = new GameObject[maxChainLength+1];// chain[0] is for harpoon, so number of indexes is +1 from number of chain links
-		chain[0] = harpoon; 
+		chain[0] = harpoon; //todo instantiate harpoon from prefab
 		for(int i=1; i<=maxChainLength; i++){
 			chain[i] = Instantiate(chainCellPrototype) as GameObject;
-			chain[i].name = "Rope" + i.ToString();
+			chain[i].name = "Rope" + i.ToString(); // todo change to string builder
 			chain[i].transform.parent = chainContainer.transform;
 		}
 		line = gameObject.GetComponent<LineRenderer>();
@@ -49,7 +45,7 @@ public class ChainController : MonoBehaviour {
 					for (int i = 1; i<= cellsToAdd; i++){
 						chain[currentChainLength+i].transform.position = Vector3.Lerp(chain[currentChainLength].transform.position, transform.position, i*(float)chainStep/delta);
 						CreateCharJoint(chain[currentChainLength+i],chain[currentChainLength+i-1]);
-						chain[currentChainLength+i].GetComponent<Rigidbody>().velocity = GetComponent<Rigidbody>().velocity;
+						chain[currentChainLength+i].GetComponent<Rigidbody>().velocity = PlayerController.instance.gameObject.GetComponent<Rigidbody>().velocity;
 					}
 					currentChainLength += cellsToAdd;
 				}
@@ -79,7 +75,7 @@ public class ChainController : MonoBehaviour {
 			if (Vector3.Distance(transform.position, harpoon.transform.position)< desolidationDistanceModifer*chainStep*currentChainLength){
 				status = "connected";
 				for (int i = 1; i<= currentChainLength; i++){
-					chain[i].GetComponent<Rigidbody>().velocity = Vector3.Lerp(harpoon.GetComponent<Rigidbody>().velocity, GetComponent<Rigidbody>().velocity, (float)i/(float)currentChainLength);
+					chain[i].GetComponent<Rigidbody>().velocity = Vector3.Lerp(harpoon.GetComponent<Rigidbody>().velocity, PlayerController.instance.gameObject.GetComponent<Rigidbody>().velocity, (float)i/(float)currentChainLength);
 				}
 			}
 		}
@@ -115,7 +111,7 @@ public class ChainController : MonoBehaviour {
 	
 	public void LaunchChain(Vector3 target){ //target is target position set by input
 		harpoon.transform.position = transform.position;
-		harpoon.GetComponent<Rigidbody>().velocity = lunchSpeedMultipier * target + GetComponent<Rigidbody>().velocity;
+		harpoon.GetComponent<Rigidbody>().velocity = lunchSpeedMultipier * target + PlayerController.instance.GetComponent<Rigidbody>().velocity;
 		harpoon.transform.LookAt(transform.position + target);
 		harpoon.transform.Rotate(90,0,0);
 		status = "launched";
@@ -142,10 +138,10 @@ public class ChainController : MonoBehaviour {
 		CreateCharJoint(harpoon,target);
 	}
 	
-	void CreateCharJoint(GameObject OnWho, GameObject ConnectedToWho){
-		CharacterJoint jointConnection = OnWho.AddComponent<CharacterJoint>();		
+	void CreateCharJoint(GameObject hostOfConnection, GameObject connectedObject){
+		CharacterJoint jointConnection = hostOfConnection.AddComponent<CharacterJoint>();		
 		jointConnection.anchor = Vector3.zero;
-		jointConnection.connectedBody = ConnectedToWho.GetComponent<Rigidbody>();
+		jointConnection.connectedBody = connectedObject.GetComponent<Rigidbody>();
 		jointConnection.axis = new Vector3(0,0,1);	//rotation available only in plane of screen
 	}
 	
