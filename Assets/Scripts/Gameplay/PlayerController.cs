@@ -36,7 +36,7 @@ public class PlayerController : MonoBehaviour { // Скрипт для упра�
 		}
 		if (!Input.GetMouseButton(0)&& !moveEnabled) {
 			moveEnabled = true;
-			chain.LaunchChain(deltaPosition);
+			chain.LaunchChain(deltaPosition/100f);
 		}
 		if (Input.GetMouseButton(0)){
 			Debug.DrawRay(transform.position, deltaPosition/100f);

@@ -51,7 +51,7 @@ public class ChainController : MonoBehaviour {
 				}
 			}else{
 				status = "missed";				
-				CreateCharJoint(gameObject,chain[currentChainLength]);
+				CreateCharJoint(PlayerController.instance.gameObject,chain[currentChainLength]);
 			}
 		}
 		if (status == "connected"){
