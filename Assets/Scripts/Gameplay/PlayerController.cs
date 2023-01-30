@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class PlayerController : MonoBehaviour { // Скрипт для управления корабликом
+public class PlayerController : MonoBehaviour { 
 	
 	private bool moveEnabled = true;
 	public float enginePower = 1;
@@ -14,11 +14,6 @@ public class PlayerController : MonoBehaviour { // Скрипт для упра�
 	void Awake(){
 		instance = this;
 		cameraStartPosition = Camera.main.transform.localPosition;
-		try{
-			GameObject.Find("RealMessenger").GetComponent<Messenger>().GameInit();//пытаемся найти контейнер с установками иигры и пнуть его чтобы разложил переменные по объектам
-		}catch{
-			Debug.Log("Messenger not found. Run from wrong scene mb?");
-		}
 	}
 		
 	void Update () {
@@ -36,7 +31,7 @@ public class PlayerController : MonoBehaviour { // Скрипт для упра�
 		}
 		if (!Input.GetMouseButton(0)&& !moveEnabled) {
 			moveEnabled = true;
-			chain.LaunchChain(deltaPosition/100f);
+			chain.LaunchChain(deltaPosition/20f);
 		}
 		if (Input.GetMouseButton(0)){
 			Debug.DrawRay(transform.position, deltaPosition/100f);
