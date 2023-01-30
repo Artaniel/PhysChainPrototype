@@ -97,13 +97,13 @@ public class ChainController : MonoBehaviour {
 	
 	void PullBackSolid(){ // much physics and geometry here. It equals momentums in projection on axis of chain to prevent its extending
 		Vector3 deltaPos = harpoon.transform.position - transform.position;
-		Vector3 deltaV = harpoon.GetComponent<Rigidbody>().velocity - GetComponent<Rigidbody>().velocity;		
+		Vector3 deltaV = harpoon.GetComponent<Rigidbody>().velocity - PlayerController.instance.gameObject.GetComponent<Rigidbody>().velocity;		
 		float alpha = Vector3.Angle(deltaPos, deltaV);
 		Vector3 deltaVNormal =  deltaV.magnitude* Mathf.Cos(alpha/180*Mathf.PI)* deltaPos / deltaPos.magnitude; // diference in velociti in projection of axis of chain
 		float hMass = harpoon.GetComponent<Rigidbody>().mass + harpoon.GetComponent<CharacterJoint>().connectedBody.GetComponent<Rigidbody>().mass;//mass of Harpoon + mass of asteroid connected to it
-		float pMass = GetComponent<Rigidbody>().mass;
+		float pMass = PlayerController.instance.gameObject.GetComponent<Rigidbody>().mass;
 		if (Vector3.Angle(deltaVNormal,deltaPos)<90){
-			GetComponent<Rigidbody>().velocity += deltaVNormal * hMass / (hMass + pMass);
+			PlayerController.instance.gameObject.GetComponent<Rigidbody>().velocity += deltaVNormal * hMass / (hMass + pMass);
 			harpoon.GetComponent<Rigidbody>().velocity += - deltaVNormal * pMass / (hMass + pMass);
 			harpoon.GetComponent<CharacterJoint>().connectedBody.GetComponent<Rigidbody>().velocity += - deltaVNormal * pMass / (hMass + pMass);
 		}
@@ -122,10 +122,11 @@ public class ChainController : MonoBehaviour {
 	}
 	
 	public void HarponHitSomething(GameObject target){
+		Debug.Log("HarponHitSomething");
 		if ((status == "launched")&&(target.name.Contains("Asteroid"))) {
 			ConnectChain(target);
 			status = "connected";
-			CreateCharJoint(gameObject,chain[currentChainLength]);
+			CreateCharJoint(PlayerController.instance.gameObject,chain[currentChainLength]);
 		}		
 	}
 	
