@@ -24,6 +24,7 @@ public class ChainController : MonoBehaviour {
 	private LineRenderer line; // for rope or chain line renderer
 	private float restartingPhase = 0;
 	public float restartTime = 0.5f;
+	private GameObject player;
 	
 	void Start () {
 		chain = new GameObject[maxChainLength+1];// chain[0] is for harpoon, so number of indexes is +1 from number of chain links
@@ -34,6 +35,7 @@ public class ChainController : MonoBehaviour {
 			chain[i].transform.parent = chainContainer.transform;
 		}
 		line = gameObject.GetComponent<LineRenderer>();
+		player = PlayerController.instance.gameObject;
 	}
 	
 	void Update () {
@@ -45,13 +47,13 @@ public class ChainController : MonoBehaviour {
 					for (int i = 1; i<= cellsToAdd; i++){
 						chain[currentChainLength+i].transform.position = Vector3.Lerp(chain[currentChainLength].transform.position, transform.position, i*(float)chainStep/delta);
 						CreateCharJoint(chain[currentChainLength+i],chain[currentChainLength+i-1]);
-						chain[currentChainLength+i].GetComponent<Rigidbody>().velocity = PlayerController.instance.gameObject.GetComponent<Rigidbody>().velocity;
+						chain[currentChainLength+i].GetComponent<Rigidbody>().velocity = player.GetComponent<Rigidbody>().velocity;
 					}
 					currentChainLength += cellsToAdd;
 				}
 			}else{
 				status = "missed";				
-				CreateCharJoint(PlayerController.instance.gameObject,chain[currentChainLength]);
+				CreateCharJoint(player, chain[currentChainLength]);
 			}
 		}
 		if (status == "connected"){
@@ -75,7 +77,7 @@ public class ChainController : MonoBehaviour {
 			if (Vector3.Distance(transform.position, harpoon.transform.position)< desolidationDistanceModifer*chainStep*currentChainLength){
 				status = "connected";
 				for (int i = 1; i<= currentChainLength; i++){
-					chain[i].GetComponent<Rigidbody>().velocity = Vector3.Lerp(harpoon.GetComponent<Rigidbody>().velocity, PlayerController.instance.gameObject.GetComponent<Rigidbody>().velocity, (float)i/(float)currentChainLength);
+					chain[i].GetComponent<Rigidbody>().velocity = Vector3.Lerp(harpoon.GetComponent<Rigidbody>().velocity, player.GetComponent<Rigidbody>().velocity, (float)i/(float)currentChainLength);
 				}
 			}
 		}
@@ -97,13 +99,13 @@ public class ChainController : MonoBehaviour {
 	
 	void PullBackSolid(){ // much physics and geometry here. It equals momentums in projection on axis of chain to prevent its extending
 		Vector3 deltaPos = harpoon.transform.position - transform.position;
-		Vector3 deltaV = harpoon.GetComponent<Rigidbody>().velocity - PlayerController.instance.gameObject.GetComponent<Rigidbody>().velocity;		
+		Vector3 deltaV = harpoon.GetComponent<Rigidbody>().velocity - player.GetComponent<Rigidbody>().velocity;		
 		float alpha = Vector3.Angle(deltaPos, deltaV);
 		Vector3 deltaVNormal =  deltaV.magnitude* Mathf.Cos(alpha/180*Mathf.PI)* deltaPos / deltaPos.magnitude; // diference in velociti in projection of axis of chain
 		float hMass = harpoon.GetComponent<Rigidbody>().mass + harpoon.GetComponent<CharacterJoint>().connectedBody.GetComponent<Rigidbody>().mass;//mass of Harpoon + mass of asteroid connected to it
 		float pMass = PlayerController.instance.gameObject.GetComponent<Rigidbody>().mass;
 		if (Vector3.Angle(deltaVNormal,deltaPos)<90){
-			PlayerController.instance.gameObject.GetComponent<Rigidbody>().velocity += deltaVNormal * hMass / (hMass + pMass);
+			player.GetComponent<Rigidbody>().velocity += deltaVNormal * hMass / (hMass + pMass);
 			harpoon.GetComponent<Rigidbody>().velocity += - deltaVNormal * pMass / (hMass + pMass);
 			harpoon.GetComponent<CharacterJoint>().connectedBody.GetComponent<Rigidbody>().velocity += - deltaVNormal * pMass / (hMass + pMass);
 		}
@@ -111,7 +113,7 @@ public class ChainController : MonoBehaviour {
 	
 	public void LaunchChain(Vector3 target){ //target is target position set by input
 		harpoon.transform.position = transform.position;
-		harpoon.GetComponent<Rigidbody>().velocity = lunchSpeedMultipier * target + PlayerController.instance.GetComponent<Rigidbody>().velocity;
+		harpoon.GetComponent<Rigidbody>().velocity = lunchSpeedMultipier * target + player.GetComponent<Rigidbody>().velocity;
 		harpoon.transform.LookAt(transform.position + target);
 		harpoon.transform.Rotate(90,0,0);
 		status = "launched";
@@ -122,11 +124,10 @@ public class ChainController : MonoBehaviour {
 	}
 	
 	public void HarponHitSomething(GameObject target){
-		Debug.Log("HarponHitSomething");
 		if ((status == "launched")&&(target.name.Contains("Asteroid"))) {
 			ConnectChain(target);
 			status = "connected";
-			CreateCharJoint(PlayerController.instance.gameObject,chain[currentChainLength]);
+			CreateCharJoint(player, chain[currentChainLength]);
 		}		
 	}
 	
