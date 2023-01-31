@@ -8,7 +8,7 @@ public class ChainController : MonoBehaviour {
 		missed,		// chain unfolded, harpoon did not connected, just flying near ship, or harpoon detached after connect
 		connected,	// harpoon hit and connected, chain is stable and flexible
 		solid,		// harpoon connected, chain is overextended and solid
-		restarting	// chain is returnin to the ship after harpoon was caught by ship.
+		restarting	// chain is returning to the ship after harpoon was caught by ship.
 	}; 
 	public ChainState status = ChainState.start;
 	public int maxChainLength = 50;// max number of chain links
@@ -47,7 +47,7 @@ public class ChainController : MonoBehaviour {
 			if (cellsToAdd + currentChainLength <= maxChainLength){
 				if (delta > chainStep){
 					for (int i = 1; i<= cellsToAdd; i++){
-						chain[currentChainLength+i].transform.position = Vector3.Lerp(chain[currentChainLength].transform.position, transform.position, i*(float)chainStep/delta);
+						chain[currentChainLength+i].transform.position = Vector3.Lerp(chain[currentChainLength].transform.position, player.transform.position, i*(float)chainStep/delta);
 						CreateCharJoint(chain[currentChainLength+i],chain[currentChainLength+i-1]);
 						chain[currentChainLength+i].GetComponent<Rigidbody>().velocity = player.GetComponent<Rigidbody>().velocity;
 					}
@@ -158,7 +158,7 @@ public class ChainController : MonoBehaviour {
 			}
 			harpoon.GetComponent<Rigidbody>().velocity = Vector3.zero;
 			harpoon.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
-			Destroy(gameObject.GetComponent<CharacterJoint>());
+			Destroy(player.GetComponent<CharacterJoint>());
 		}
 		restartingPhase+= Time.deltaTime;
 		if (restartingPhase<restartTime){
