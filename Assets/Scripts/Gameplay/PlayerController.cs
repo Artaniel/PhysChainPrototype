@@ -51,13 +51,12 @@ public class PlayerController : MonoBehaviour {
 			Debug.DrawRay(transform.position,(InputPositionUniversal - new Vector3(Screen.width/2 ,Screen.height/2, 0)) /80+new Vector3(Mathf.Atan(GetComponent<Rigidbody>().velocity.x/10)*2,Mathf.Atan(GetComponent<Rigidbody>().velocity.y/10)*2) );
 		}
 	}
-	
-	
+		
 	void OnMouseDown(){ 
-		if (chain.status == "start"){
+		if (chain.status == ChainController.ChainState.start){
 			moveEnabled = false; 
 		}
-		if ((chain.status == "connected")||(chain.status == "solid")){
+		if ((chain.status == ChainController.ChainState.connected)||(chain.status == ChainController.ChainState.solid)){
 			chain.DisconnectHarpoon();
 		}
 	}

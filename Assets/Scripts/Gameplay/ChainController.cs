@@ -1,14 +1,16 @@
 using UnityEngine;
 using System.Collections;
 
-public class ChainController : MonoBehaviour {	
-	public string status="start";//строка в которой храним в каком состоянии мы сейчас:
-	//"start" - начальное состояние, гарпун в корабле, цепи нет.
-	//"launched" - Гарпун запущен, но еще никуда не попал, цепь генерится за ним
-	//"missed" - цепь достигла макс длины, а гарпун никуда не попал, просто болтается в пространстве, присоединится ни к чему уже не может. Или гарпун уже отцеплен вручную.
-	//"connected" - Гарпун попал в астероид, связан с ним, цепь сформирована
-	//"solid" - Цепь напряжена, орисовывается не отдельными физ телами, а тупым лерпом
-	//"restarting" - цепь плавно возвращается в корабль
+public class ChainController : MonoBehaviour {
+	public enum ChainState {
+		start,		// default, harpoon on the ship, no chain present
+		launched,   // just launched, chain is unfolding, harpoon can connect with asteroid
+		missed,		// chain unfolded, harpoon did not connected, just flying near ship, or harpoon detached after connect
+		connected,	// harpoon hit and connected, chain is stable and flexible
+		solid,		// harpoon connected, chain is overextended and solid
+		restarting	// chain is returnin to the ship after harpoon was caught by ship.
+	}; 
+	public ChainState status = ChainState.start;
 	public int maxChainLength = 50;// max number of chain links
 	public int currentChainLength = 0;
 	public float chainStep = 0.1f;//nominal distance between chain links
@@ -39,7 +41,7 @@ public class ChainController : MonoBehaviour {
 	}
 	
 	void Update () {
-		if (status == "launched"){			//self made state machine
+		if (status == ChainState.launched){			//self made state machine
 			float delta = Vector3.Distance(transform.position, chain[currentChainLength].transform.position);
 			int cellsToAdd = (int)(delta / chainStep);
 			if (cellsToAdd + currentChainLength <= maxChainLength){
@@ -52,17 +54,17 @@ public class ChainController : MonoBehaviour {
 					currentChainLength += cellsToAdd;
 				}
 			}else{
-				status = "missed";				
+				status = ChainState.missed;				
 				CreateCharJoint(player, chain[currentChainLength]);
 			}
 		}
-		if (status == "connected"){
+		if (status == ChainState.connected){
 			if (Vector3.Distance(transform.position, harpoon.transform.position)> solidationDistanceModifer*chainStep*currentChainLength){
-				status = "solid";
+				status = ChainState.solid;
 				solidationStage = 0;
 			}
 		}
-		if (status == "solid"){
+		if (status == ChainState.solid){
 			if (solidationStage>solidationTimeFrames){
 				for (int i = 1; i<= currentChainLength; i++){
 					chain[i].transform.position = Vector3.Lerp(harpoon.transform.position, transform.position, (float)i/(float)currentChainLength);
@@ -75,24 +77,24 @@ public class ChainController : MonoBehaviour {
 						,chain[i].transform.position,0.5f);
 			}
 			if (Vector3.Distance(transform.position, harpoon.transform.position)< desolidationDistanceModifer*chainStep*currentChainLength){
-				status = "connected";
+				status = ChainState.connected;
 				for (int i = 1; i<= currentChainLength; i++){
 					chain[i].GetComponent<Rigidbody>().velocity = Vector3.Lerp(harpoon.GetComponent<Rigidbody>().velocity, player.GetComponent<Rigidbody>().velocity, (float)i/(float)currentChainLength);
 				}
 			}
 		}
-		if ((status == "missed")&&(Vector3.Distance(harpoon.transform.position,transform.position)<0.5f)){
-			status = "restarting";
+		if ((status == ChainState.missed)&&(Vector3.Distance(harpoon.transform.position,transform.position)<0.5f)){
+			status = ChainState.restarting;
 			restartingPhase = 0;			
 		}
-		if (status == "restarting"){
+		if (status == ChainState.restarting){
 			RestartChainUpdate();
 		}
 		DrawRope();
 	}
 	
 	void FixedUpdate(){
-		if (status == "solid"){
+		if (status == ChainState.solid){
 			PullBackSolid();
 		}
 	}
@@ -116,7 +118,7 @@ public class ChainController : MonoBehaviour {
 		harpoon.GetComponent<Rigidbody>().velocity = lunchSpeedMultipier * target + player.GetComponent<Rigidbody>().velocity;
 		harpoon.transform.LookAt(transform.position + target);
 		harpoon.transform.Rotate(90,0,0);
-		status = "launched";
+		status = ChainState.launched;
 	}
 	
 	public void HarpoonClicked(){
@@ -124,16 +126,16 @@ public class ChainController : MonoBehaviour {
 	}
 	
 	public void HarponHitSomething(GameObject target){
-		if ((status == "launched")&&(target.name.Contains("Asteroid"))) {
+		if ((status == ChainState.launched)&&(target.name.Contains("Asteroid"))) {
 			ConnectChain(target);
-			status = "connected";
+			status = ChainState.connected;
 			CreateCharJoint(player, chain[currentChainLength]);
 		}		
 	}
 	
 	public void DisconnectHarpoon(){
 		Destroy(harpoon.GetComponent<CharacterJoint>());
-		status = "missed";
+		status = ChainState.missed;
 	}
 	
 	void ConnectChain(GameObject target){
@@ -170,12 +172,12 @@ public class ChainController : MonoBehaviour {
 			}
 			harpoon.transform.position = new Vector3(0,0,-100);
 			currentChainLength = 0;
-			status = "start";	
+			status = ChainState.start;	
 		}		
 	}
 	
 	void DrawRope(){
-		if (status != "start") {
+		if (status != ChainState.start) {
 			line.positionCount = currentChainLength + 2;
 			line.SetPosition(0,harpoon.transform.position);
 			for (int i = 1; i<= currentChainLength; i++){
