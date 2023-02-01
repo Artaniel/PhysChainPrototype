@@ -30,8 +30,8 @@ public class CloudController : MonoBehaviour {
 	
 	void Update () {
 		PlayerPos = GameObject.Find("PlayerChar").transform.position;
-		for (int i = 0; i<CurrentNumberOfClouds;i++){// тут проще чем с астероидами, если вылезло за границу симуляции переносим на другую границу и немного перемешиваем
-			NeedToRespawn = false;//чистим после прошлого раза
+		for (int i = 0; i<CurrentNumberOfClouds;i++){
+			NeedToRespawn = false;
 			if (CloudsArray[i].transform.position.x < PlayerPos.x - SimulationRange){
 				NeedToRespawn = true;
 				RespawnPosition = new Vector3( SimulationRange,(Random.value*2-1)*SimulationRange,Random.value*(MaxDeapth-MinDeapth)+MinDeapth);

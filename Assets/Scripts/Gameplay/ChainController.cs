@@ -83,7 +83,7 @@ public class ChainController : MonoBehaviour {
 				}
 			}
 		}
-		if ((status == ChainState.missed)&&(Vector3.Distance(harpoon.transform.position,transform.position)<0.5f)){
+		if ((status == ChainState.missed)&&(Vector3.Distance(harpoon.transform.position,transform.position)<1f)){
 			status = ChainState.restarting;
 			restartingPhase = 0;			
 		}
