@@ -33,10 +33,10 @@ public class Messenger : MonoBehaviour {//это контейнер для пе�
 	}
 	
 	void SetupShip(){
-		damageController.MaxEnginePower = 50+ 25* EngineLvl;//пока костыль, потом придумаю как вынести таблицу из кода чтобы редактировать ее без прблем
+		damageController.maxEnginePower = 50+ 25* EngineLvl;//пока костыль, потом придумаю как вынести таблицу из кода чтобы редактировать ее без прблем
 		PlayerChar.GetComponent<Rigidbody>().drag = 0.5f / (AvionicLvl+1);
 		//damageController.DamageIgnoreMinimum = 10+10*ArmorLvl;
-		damageController.PulseToHPMultiplier = 30f/(1+ArmorLvl);
+		damageController.pulseToHPMultiplier = 30f/(1+ArmorLvl);
 	}
 	
 	void SetAsteroidSpawner(){
