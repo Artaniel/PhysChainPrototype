@@ -528,6 +528,25 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2334418130171445137, guid: 3090ea4980fcff54fa0db87e3754c0bd, type: 3}
   m_PrefabInstance: {fileID: 2334418130810058058}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &976456412
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 976456410}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f5481dcd48bf0449a13a746729c2de2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxEnginePower: 50
+  hitPoints: 100
+  damageIgnoreMinimum: 1
+  pulseToHPMultiplier: 5
+  regenDelay: 1
+  regenSpeed: 10
+  propeller: {fileID: 0}
 --- !u!1 &1099134092
 GameObject:
   m_ObjectHideFlags: 0
@@ -815,7 +834,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2334418130171445137, guid: 3090ea4980fcff54fa0db87e3754c0bd, type: 3}
       insertIndex: -1
       addedObject: {fileID: 884236253}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2334418130171445136, guid: 3090ea4980fcff54fa0db87e3754c0bd, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 976456412}
   m_SourcePrefab: {fileID: 100100000, guid: 3090ea4980fcff54fa0db87e3754c0bd, type: 3}
 --- !u!1001 &8483532375938594312
 PrefabInstance:

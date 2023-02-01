@@ -27,7 +27,7 @@ public class PlayerController : MonoBehaviour {
 	{
 		Vector3 deltaPosition = Input.mousePosition - new Vector3(Screen.width / 2f, Screen.height / 2f, 0);
 		if (Input.GetMouseButton(0) && moveEnabled) { 
-			GetComponent<Rigidbody>().AddForce(deltaPosition * enginePower);
+			GetComponent<Rigidbody>().AddForce(deltaPosition * enginePower/50f);
 		}
 		if (!Input.GetMouseButton(0)&& !moveEnabled) {
 			moveEnabled = true;
@@ -41,7 +41,7 @@ public class PlayerController : MonoBehaviour {
 	void TouchInputUpdate(){ // needs rework
 		InputPositionUniversal = new Vector3(Input.touches[0].position.x,Input.touches[0].position.y,0);
 		if (Input.touchCount>0 && moveEnabled){			
-			GetComponent<Rigidbody>().AddForce((InputPositionUniversal - new Vector3(Screen.width/2 ,Screen.height/2, 0))*enginePower /100 + 40* new Vector3(Mathf.Atan(GetComponent<Rigidbody>().velocity.x/10)*2,Mathf.Atan(GetComponent<Rigidbody>().velocity.y/10)*2));//100 тут подобранный отфанаря параметр который позмоляет перевести из пикселов экрана в метры игрового пространства
+			GetComponent<Rigidbody>().AddForce((InputPositionUniversal - new Vector3(Screen.width/2 ,Screen.height/2, 0))*enginePower /100 + 40* new Vector3(Mathf.Atan(GetComponent<Rigidbody>().velocity.x/10)*2,Mathf.Atan(GetComponent<Rigidbody>().velocity.y/10)*2));
 		}
 		if (Input.touchCount==0 && !moveEnabled){
 			moveEnabled = true;

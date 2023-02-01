@@ -26,7 +26,8 @@ public class DamageController : MonoBehaviour {
 			if (hitPoints>100) hitPoints = 100;
 		}
 		player.enginePower = maxEnginePower * hitPoints / 100f;
-		propeller?.transform.Rotate(Vector3.forward, Time.deltaTime * hitPoints * 180f / (10f * Mathf.PI));
+		if (propeller)
+			propeller.transform.Rotate(Vector3.forward, Time.deltaTime * hitPoints * 180f / (10f * Mathf.PI));
 	}
 	
 	void OnCollisionEnter(Collision collision){
