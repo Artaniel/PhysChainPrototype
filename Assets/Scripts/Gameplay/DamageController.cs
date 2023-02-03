@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using TMPro;
 
 public class DamageController : MonoBehaviour {
 	
@@ -11,11 +12,13 @@ public class DamageController : MonoBehaviour {
 	public float regenSpeed = 10; // hp/sec
 	private float regenDelayTimer;
 	private PlayerController player;
-	public GameObject propeller = null; 
+	public GameObject propeller = null;
+	public TextMeshProUGUI hpText;
 	
 	void Start () {
 		player = gameObject.GetComponent<PlayerController>();
 		//maxEnginePower = playerController.EnginePower;
+		
 	}
 	
 	void Update () {
@@ -28,6 +31,7 @@ public class DamageController : MonoBehaviour {
 		player.enginePower = maxEnginePower * hitPoints / 100f;
 		if (propeller)
 			propeller.transform.Rotate(Vector3.forward, Time.deltaTime * hitPoints * 180f / (10f * Mathf.PI));
+		hpText.text = $"{(int)hitPoints}%hp";
 	}
 	
 	void OnCollisionEnter(Collision collision){
